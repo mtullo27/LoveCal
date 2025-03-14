@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block title %}Calendar{% endblock %}
+{% block content %}
+<div class="header">My Custom Calendar</div>
+<div class="settings-link">
+    <a href="{{ url_for('photo_bp.index') }}"><i class="bi bi-box-arrow-left"></i></a>
+</div>
+<div style="margin-top: 20px; text-align: center;">
+    <iframe src="{{ calendar_url }}" style="width: 95%; height: 80vh; border: 1px solid #ccc;" frameborder="0"
+        scrolling="yes"></iframe>
+</div>
+{% endblock %}

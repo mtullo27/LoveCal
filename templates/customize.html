@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block title %}Customize Interface{% endblock %}
+{% block content %}
+<h1>Customize Interface</h1>
+<form id="customForm" method="post">
+    <label>Background Color:</label>
+    <input type="color" name="background_color" value="{{ background_color }}" onchange="autoSubmit()"><br><br>
+    <label>Button Color:</label>
+    <input type="color" name="button_color" value="{{ button_color }}" onchange="autoSubmit()"><br><br>
+    <label>Container Color:</label>
+    <input type="color" name="container_color" value="{{ container_color }}" onchange="autoSubmit()"><br><br>
+    <label>Font Color:</label>
+    <input type="color" name="font_color" value="{{ font_color }}" onchange="autoSubmit()"><br><br>
+    <label>Preview Size:</label>
+    <select name="preview_size" onchange="this.form.submit()">
+        <option value="small" {% if preview_size=='small' %}selected{% endif %}>Small</option>
+        <option value="medium" {% if preview_size=='medium' %}selected{% endif %}>Medium</option>
+        <option value="large" {% if preview_size=='large' %}selected{% endif %}>Large</option>
+    </select>
+    <br><br>
+    <label>Slideshow Timeout (seconds):</label>
+    <input type="number" name="slideshow_timeout" value="{{ slideshow_timeout }}" min="0" onchange="this.form.submit()">
+    <br><br>
+    <label>Calendar URL:</label><br>
+    <input type="text" name="calendar_url" value="{{ calendar_url }}" style="width: 300px;"
+        onchange="this.form.submit()">
+    <br><br>
+</form>
+<a href="{{ url_for('photo_bp.index') }}" class="back-btn"><i class="bi bi-box-arrow-left"></i> Back to Gallery</a>
+<script>
+    function autoSubmit() {
+        document.getElementById('customForm').submit();
+    }
+</script>
+{% endblock %}

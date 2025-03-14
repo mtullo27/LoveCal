@@ -1,0 +1,79 @@
+/* GLOBALS */
+:root {
+    --background-color: #f9f9f9;
+    --button-color: #007aff;
+    --container-color: #ffffff;
+    --font-color: #333333;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--font-color);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+.header {
+    color: var(--font-color);
+}
+
+.upload-container,
+.search-container,
+.sort-container,
+.gallery-item {
+    background-color: var(--container-color);
+}
+
+.upload-container button,
+.settings-link a,
+.calendar-link a {
+    background-color: var(--button-color);
+    color: #fff;
+}
+
+.gallery-item .info {
+    color: var(--font-color);
+}
+
+/* Rest of your existing styles remain unchanged */
+
+
+button,
+.edit-btn,
+.delete-btn {
+    background-color: var(--button-color);
+    color: #fff;
+    /* or var(--font-color) if you want */
+    border: none;
+    border-radius: 0;
+    opacity: 0.9;
+    /* etc. */
+}
+
+button:hover {
+    /* You could define a --button-hover-color if you want that dynamic, too */
+    opacity: 1.0;
+}
+
+/* Container color example */
+.gallery {
+    background-color: var(--container-color);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    /* etc. */
+}
+
+/* Keep all your other classes, referencing these variables as needed. */
+.gallery.small .gallery-item {
+    width: calc(20% - 10px);
+}
+
+.gallery.medium .gallery-item {
+    width: calc(25% - 10px);
+}
+
+.gallery.large .gallery-item {
+    width: calc(33.333% - 10px);
+}
