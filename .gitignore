@@ -36,6 +36,8 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
+client_secret.json
+
 # Unit test / coverage reports
 htmlcov/
 .tox/
