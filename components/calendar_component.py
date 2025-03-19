@@ -41,7 +41,7 @@ def show_calendar():
     creds = Credentials(**session['credentials'])
     service = build('calendar', 'v3', credentials=creds)
     
-    now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC
+    time_min = '1970-01-01T00:00:00Z'
     # Retrieve calendar entries from session; default to the one from configuration.
     calendar_entries = session.get('calendar_urls', [DEFAULT_CUSTOMIZATION['calendar_url']])
     all_events = []
@@ -68,8 +68,7 @@ def show_calendar():
         try:
             events_result = service.events().list(
                 calendarId=calendar_id,
-                timeMin=now,
-                maxResults=10,
+                timeMin=time_min,
                 singleEvents=True,
                 orderBy='startTime'
             ).execute()
@@ -80,8 +79,7 @@ def show_calendar():
                 try:
                     events_result = service.events().list(
                         calendarId="primary",
-                        timeMin=now,
-                        maxResults=10,
+                        timeMin=time_min,
                         singleEvents=True,
                         orderBy='startTime'
                     ).execute()

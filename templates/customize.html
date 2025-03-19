@@ -39,7 +39,10 @@
     <button type="button" id="addCalendarUrlBtn" onclick="addCalendarUrl()">Add</button>
     <br><br>
 </form>
-<a href="{{ url_for('photo_bp.index') }}" class="back-btn"><i class="bi bi-box-arrow-left"></i> Back to Gallery</a>
+<div class="back-btn">
+  <a href="{{ url_for('photo_bp.index') }}" ><i class="bi bi-box-arrow-left"></i></a>
+</div>
+
 
 <script>
 function updateDeleteButtons() {

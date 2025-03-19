@@ -1,15 +1,16 @@
 {% extends "layout.html" %}
 {% block title %}Photo Curation{% endblock %}
 {% block content %}
+<div class="calendar-link">
+    <a href="{{ url_for('calendar_bp.authorize') }}"><i class="bi bi-calendar-fill"></i></a>
+</div>
+
 <div class="header">Photo Curation</div>
 
 <div class="settings-link">
     <a href="{{ url_for('customization_bp.customize') }}"><i class="bi bi-gear-fill"></i></a>
 </div>
 
-<div class="calendar-link">
-    <a href="{{ url_for('calendar_bp.authorize') }}"><i class="bi bi-gear-fill"></i></a>
-</div>
 
 <div class="upload-container">
     <form action="{{ url_for('photo_bp.index') }}" method="post" enctype="multipart/form-data">

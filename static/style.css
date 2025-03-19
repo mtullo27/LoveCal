@@ -26,18 +26,11 @@ body {
 }
 
 .upload-container button,
+.calendar-link a,
 .settings-link a,
-.calendar-link a {
-    background-color: var(--button-color);
-    color: #fff;
-}
-
 .gallery-item .info {
     color: var(--font-color);
 }
-
-/* Rest of your existing styles remain unchanged */
-
 
 button,
 .edit-btn,
@@ -52,8 +45,7 @@ button,
 }
 
 button:hover {
-    /* You could define a --button-hover-color if you want that dynamic, too */
-    opacity: 1.0;
+    opacity: 5.0;
 }
 
 /* Container color example */
@@ -67,7 +59,7 @@ button:hover {
 
 /* Keep all your other classes, referencing these variables as needed. */
 .gallery.small .gallery-item {
-    width: calc(20% - 10px);
+    width: calc(10% - 10px);
 }
 
 .gallery.medium .gallery-item {
@@ -75,5 +67,5 @@ button:hover {
 }
 
 .gallery.large .gallery-item {
-    width: calc(33.333% - 10px);
+    width: calc(50% - 10px);
 }
