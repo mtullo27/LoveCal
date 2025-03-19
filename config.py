@@ -6,6 +6,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'slideshow_images')
 METADATA_FILE = os.path.join(UPLOAD_FOLDER, 'metadata.json')
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 # Default customization settings
 DEFAULT_CUSTOMIZATION = {

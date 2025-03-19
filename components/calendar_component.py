@@ -1,7 +1,10 @@
+# lovecal/components/calendar_component.py
+
 import os
 import datetime
 from flask import Blueprint, render_template, session, redirect, url_for, request
 from config import DEFAULT_CUSTOMIZATION
+from urllib.parse import urlparse, parse_qs
 
 # Google API imports
 from google_auth_oauthlib.flow import Flow
@@ -11,10 +14,7 @@ from googleapiclient.discovery import build
 calendar_bp = Blueprint('calendar_bp', __name__,
                         template_folder='../templates')
 
-# Define the scope for read-only access to your calendar
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
-
-# Adjust the path to where your client_secret.json is located
 CLIENT_SECRETS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../client_secret.json')
 
 def creds_to_dict(creds):
@@ -31,29 +31,78 @@ def creds_to_dict(creds):
 @calendar_bp.route('/calendar')
 def show_calendar():
     """
-    Displays events from your personal calendar using the Google Calendar API.
-    If you aren’t authorized yet, it redirects to the authorization flow.
+    Displays events from multiple calendars using the Google Calendar API.
+    Supports both personal calendars and public calendar links.
+    If not yet authorized, it redirects to the OAuth flow.
     """
     if 'credentials' not in session:
         return redirect(url_for('calendar_bp.authorize'))
     
-    # Load stored credentials from session
     creds = Credentials(**session['credentials'])
-    
-    # Build the Google Calendar service
     service = build('calendar', 'v3', credentials=creds)
     
-    # Query the Calendar API for upcoming events
-    now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-    events_result = service.events().list(calendarId='primary', timeMin=now,
-                                          maxResults=10, singleEvents=True,
-                                          orderBy='startTime').execute()
-    events = events_result.get('items', [])
+    now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC
+    # Retrieve calendar entries from session; default to the one from configuration.
+    calendar_entries = session.get('calendar_urls', [DEFAULT_CUSTOMIZATION['calendar_url']])
+    all_events = []
+    
+    for entry in calendar_entries:
+        calendar_id = None
+        if entry.startswith("https://calendar.google.com/calendar/embed?"):
+            # Public embed link with "src" parameter
+            parsed = urlparse(entry)
+            qs = parse_qs(parsed.query)
+            calendar_id = qs.get("src", [None])[0]
+        elif entry.startswith("https://calendar.google.com/calendar/u/"):
+            # Public calendar link with "cid" parameter
+            parsed = urlparse(entry)
+            qs = parse_qs(parsed.query)
+            calendar_id = qs.get("cid", [None])[0]
+        else:
+            # Assume it's a direct calendar ID. If it contains "@" it likely refers to your personal calendar.
+            calendar_id = entry
+        
+        if not calendar_id:
+            continue
+        
+        try:
+            events_result = service.events().list(
+                calendarId=calendar_id,
+                timeMin=now,
+                maxResults=10,
+                singleEvents=True,
+                orderBy='startTime'
+            ).execute()
+        except Exception as e:
+            # If the error occurs for what appears to be a personal calendar (contains '@'),
+            # try using "primary" as a fallback.
+            if calendar_id != "primary" and "@" in calendar_id:
+                try:
+                    events_result = service.events().list(
+                        calendarId="primary",
+                        timeMin=now,
+                        maxResults=10,
+                        singleEvents=True,
+                        orderBy='startTime'
+                    ).execute()
+                    # Update calendar_id to primary for clarity in logs.
+                    calendar_id = "primary"
+                except Exception as e2:
+                    print(f"Error fetching events for calendar {calendar_id} (fallback primary): {e2}")
+                    continue
+            else:
+                print(f"Error fetching events for calendar {calendar_id}: {e}")
+                continue
+        
+        events = events_result.get('items', [])
+        all_events.extend(events)
+    
+    # Optionally sort the combined events by start time.
+    all_events.sort(key=lambda e: e['start'].get('dateTime', e['start'].get('date', '')))
     
     # Update credentials in session (in case they were refreshed)
     session['credentials'] = creds_to_dict(creds)
     
-    # Retrieve customization settings from session
     customization = {
         'background_color': session.get('background_color', DEFAULT_CUSTOMIZATION['background_color']),
         'button_color': session.get('button_color', DEFAULT_CUSTOMIZATION['button_color']),
@@ -61,15 +110,14 @@ def show_calendar():
         'font_color': session.get('font_color', DEFAULT_CUSTOMIZATION['font_color']),
     }
     
-    # Pass the events to the template (you will need to update calendar.html to display these)
     return render_template('calendar.html',
                            customization=customization,
-                           events=events)
+                           events=all_events)
 
 @calendar_bp.route('/authorize')
 def authorize():
     """
-    Starts the OAuth 2.0 flow to authorize access to your Google Calendar.
+    Starts the OAuth 2.0 flow for Google Calendar access.
     """
     flow = Flow.from_client_secrets_file(
         CLIENT_SECRETS_FILE,
@@ -80,14 +128,13 @@ def authorize():
         access_type='offline',
         include_granted_scopes='true')
     
-    # Save the state in session to verify in the callback
     session['state'] = state
     return redirect(authorization_url)
 
 @calendar_bp.route('/oauth2callback')
 def oauth2callback():
     """
-    Handles the OAuth 2.0 callback and stores the credentials in the session.
+    Handles the OAuth 2.0 callback and stores credentials.
     """
     state = session.get('state')
     flow = Flow.from_client_secrets_file(

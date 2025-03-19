@@ -1,5 +1,3 @@
-# lovecal/main.py
-
 from flask import Flask, session
 from components.photo_curation import photo_bp
 from components.customization import customization_bp

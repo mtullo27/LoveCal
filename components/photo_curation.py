@@ -1,5 +1,3 @@
-# lovecal/components/photo_curation.py
-
 import os
 import json
 from datetime import datetime
