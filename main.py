@@ -19,7 +19,9 @@ def create_app():
                 'background_color': session.get('background_color', DEFAULT_CUSTOMIZATION['background_color']),
                 'button_color': session.get('button_color', DEFAULT_CUSTOMIZATION['button_color']),
                 'container_color': session.get('container_color', DEFAULT_CUSTOMIZATION['container_color']),
-                'font_color': session.get('font_color', DEFAULT_CUSTOMIZATION['font_color'])
+                'font_color': session.get('font_color', DEFAULT_CUSTOMIZATION['font_color']),
+                'slideshow_timeout': session.get('slideshow_timeout', DEFAULT_CUSTOMIZATION['slideshow_timeout']),
+                'slide_duration': session.get('slide_duration', DEFAULT_CUSTOMIZATION['slide_duration'])
             }
         }
 

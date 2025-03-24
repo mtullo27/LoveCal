@@ -1,105 +1,121 @@
 {% extends "layout.html" %}
 {% block title %}Customize Interface{% endblock %}
 {% block content %}
-<h1>Customize Interface</h1>
-<form id="customForm" method="post">
-    <label>Background Color:</label>
-    <input type="color" name="background_color" value="{{ background_color }}" onchange="autoSubmit()"><br><br>
-
-    <label>Button Color:</label>
-    <input type="color" name="button_color" value="{{ button_color }}" onchange="autoSubmit()"><br><br>
-
-    <label>Container Color:</label>
-    <input type="color" name="container_color" value="{{ container_color }}" onchange="autoSubmit()"><br><br>
-
-    <label>Font Color:</label>
-    <input type="color" name="font_color" value="{{ font_color }}" onchange="autoSubmit()"><br><br>
-
-    <label>Preview Size:</label>
-    <select name="preview_size" onchange="this.form.submit()">
+<div class="container">
+  <h1 class="text-2xl font-bold mb-6">Customize Interface</h1>
+  <form id="customForm" method="post" class="space-y-6">
+    <!-- Color settings -->
+    <!-- <div>
+      <label class="block mb-2 text-sm font-medium text-gray-900">Background Color</label>
+      <input type="color" name="background_color" value="{{ background_color }}" onchange="autoSubmit()"
+        class="w-16 h-10 p-0 border-0">
+    </div>
+    <div>
+      <label class="block mb-2 text-sm font-medium text-gray-900">Button Color</label>
+      <input type="color" name="button_color" value="{{ button_color }}" onchange="autoSubmit()"
+        class="w-16 h-10 p-0 border-0">
+    </div>
+    <div>
+      <label class="block mb-2 text-sm font-medium text-gray-900">Container Color</label>
+      <input type="color" name="container_color" value="{{ container_color }}" onchange="autoSubmit()"
+        class="w-16 h-10 p-0 border-0">
+    </div>
+    <div>
+      <label class="block mb-2 text-sm font-medium text-gray-900">Font Color</label>
+      <input type="color" name="font_color" value="{{ font_color }}" onchange="autoSubmit()"
+        class="w-16 h-10 p-0 border-0">
+    </div> -->
+    <!-- Additional settings -->
+    <div>
+      <label class="block mb-2 text-sm font-medium text-gray-900">Preview Size</label>
+      <select name="preview_size" onchange="this.form.submit()"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">
         <option value="small" {% if preview_size=='small' %}selected{% endif %}>Small</option>
         <option value="medium" {% if preview_size=='medium' %}selected{% endif %}>Medium</option>
         <option value="large" {% if preview_size=='large' %}selected{% endif %}>Large</option>
-    </select>
-    <br><br>
-
-    <label>Slideshow Timeout (seconds):</label>
-    <input type="number" name="slideshow_timeout" value="{{ slideshow_timeout }}" min="0" onchange="this.form.submit()">
-    <br><br>
-
-    <label>Calendar URLs:</label><br>
-    <div id="calendarUrlsContainer">
-      {% for url in calendar_urls %}
-      <div class="calendar-url-entry" style="margin-bottom:5px;">
-          <input type="text" name="calendar_urls" value="{{ url }}" style="width:300px;" onblur="autoSubmit()">
-          <button type="button" class="delete-btn" onclick="deleteCalendarUrl(this)">Delete</button>
-      </div>
-      {% endfor %}
+      </select>
     </div>
-    <button type="button" id="addCalendarUrlBtn" onclick="addCalendarUrl()">Add</button>
-    <br><br>
-</form>
-<div class="back-btn">
-  <a href="{{ url_for('photo_bp.index') }}" ><i class="bi bi-box-arrow-left"></i></a>
+    <div>
+      <label class="block mb-2 text-sm font-medium text-gray-900">Slideshow Timeout (seconds)</label>
+      <input type="number" name="slideshow_timeout" value="{{ slideshow_timeout }}" min="0"
+        onchange="this.form.submit()"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">
+    </div>
+    <div>
+      <label class="block mb-2 text-sm font-medium text-gray-900">Slide Duration (seconds)</label>
+      <input type="number" id="slideDuration" name="slide_duration" value="{{ slide_duration }}" min="1"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">
+    </div>
+    <!-- Calendar Entries -->
+    <div>
+      <label class="block mb-2 text-sm font-medium text-gray-900">Calendar Entries</label>
+      <div id="calendarsContainer">
+        {% for entry in calendar_entries %}
+        <div class="calendar-entry flex items-center space-x-2 mb-2">
+          <input type="text" name="calendar_urls" value="{{ entry.url }}" placeholder="Calendar URL"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block flex-grow p-2.5">
+          <input type="color" name="calendar_colors" value="{{ entry.color }}" class="w-10 h-10 p-0 border-0">
+          <button type="button" class="delete-calendar" onclick="deleteCalendar(this)" {% if calendar_entries|length==1
+            %}style="display:none;" {% endif %}>
+            <i class="bi bi-dash-circle" style="color: {{ button_color }};"></i>
+          </button>
+          <button type="button" class="add-calendar" onclick="addCalendar(this)">
+            <i class="bi bi-plus-circle" style="color: {{ button_color }};"></i>
+          </button>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </form>
 </div>
 
-
 <script>
-function updateDeleteButtons() {
-  const entries = document.querySelectorAll('.calendar-url-entry');
-  if (entries.length === 1) {
-    const deleteBtn = entries[0].querySelector('.delete-btn');
-    if (deleteBtn) {
-      deleteBtn.style.display = 'none';
-    }
-  } else {
-    entries.forEach(entry => {
-      const deleteBtn = entry.querySelector('.delete-btn');
-      if (deleteBtn) {
-        deleteBtn.style.display = 'inline-block';
-      }
-    });
+  function autoSubmit() {
+    document.getElementById('customForm').submit();
   }
-}
+  // Global variable for button color from customization.
+  const buttonColor = "{{ button_color }}";
 
-function addCalendarUrl() {
-  const container = document.getElementById('calendarUrlsContainer');
-  const newDiv = document.createElement('div');
-  newDiv.className = 'calendar-url-entry';
-  newDiv.style.marginBottom = '5px';
-  
-  const newInput = document.createElement('input');
-  newInput.type = 'text';
-  newInput.name = 'calendar_urls';
-  newInput.style.width = '300px';
-  newInput.onblur = autoSubmit;
-  newDiv.appendChild(newInput);
-  
-  const deleteBtn = document.createElement('button');
-  deleteBtn.type = 'button';
-  deleteBtn.className = 'delete-btn';
-  deleteBtn.textContent = 'Delete';
-  deleteBtn.onclick = function() { deleteCalendarUrl(deleteBtn); };
-  newDiv.appendChild(deleteBtn);
-  
-  container.appendChild(newDiv);
-  updateDeleteButtons();
-}
+  function addCalendar(button) {
+    const container = document.getElementById('calendarsContainer');
+    const newDiv = document.createElement('div');
+    newDiv.className = 'calendar-entry flex items-center space-x-2 mb-2';
+    newDiv.innerHTML = `
+      <input type="text" name="calendar_urls" placeholder="Calendar URL" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block flex-grow p-2.5">
+      <input type="color" name="calendar_colors" value="#007aff" class="w-10 h-10 p-0 border-0">
+      <button type="button" class="delete-calendar" onclick="deleteCalendar(this)"><i class="bi bi-dash-circle" style="color: ${buttonColor};"></i></button>
+      <button type="button" class="add-calendar" onclick="addCalendar(this)"><i class="bi bi-plus-circle" style="color: ${buttonColor};"></i></button>
+    `;
+    container.insertBefore(newDiv, button.parentNode.nextSibling);
+    updateDeleteButtons();
+  }
+  function deleteCalendar(button) {
+    const row = button.parentNode;
+    row.parentNode.removeChild(row);
+    updateDeleteButtons();
+  }
+  function updateDeleteButtons() {
+    const rows = document.querySelectorAll('#calendarsContainer .calendar-entry');
+    if (rows.length === 1) {
+      rows[0].querySelector('.delete-calendar').style.display = 'none';
+    } else {
+      rows.forEach(row => {
+        row.querySelector('.delete-calendar').style.display = 'inline-block';
+      });
+    }
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    updateDeleteButtons();
+  });
 
-function deleteCalendarUrl(btn) {
-  const entry = btn.parentNode;
-  entry.parentNode.removeChild(entry);
-  updateDeleteButtons();
-  // Immediately submit the form so the backend is updated
-  autoSubmit();
-}
-
-function autoSubmit() {
-  document.getElementById('customForm').submit();
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  updateDeleteButtons();
-});
+  // Debounce slide duration update to avoid immediate form submission
+  let slideDurationTimeout;
+  const slideDurationInput = document.getElementById("slideDuration");
+  slideDurationInput.addEventListener("input", function () {
+    clearTimeout(slideDurationTimeout);
+    slideDurationTimeout = setTimeout(() => {
+      document.getElementById("customForm").submit();
+    }, 500); // 500ms debounce
+  });
 </script>
 {% endblock %}

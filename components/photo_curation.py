@@ -103,19 +103,19 @@ def edit_metadata():
 
 @photo_bp.route('/slideshow')
 def slideshow():
-    # Load images from the slideshow_images folder
     files = [f for f in os.listdir(UPLOAD_FOLDER)
              if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp'))]
     
-    # Retrieve user custom settings (background, font, etc.)
     customization = {
         'background_color': session.get('background_color', DEFAULT_CUSTOMIZATION['background_color']),
         'button_color': session.get('button_color', DEFAULT_CUSTOMIZATION['button_color']),
         'container_color': session.get('container_color', DEFAULT_CUSTOMIZATION['container_color']),
         'font_color': session.get('font_color', DEFAULT_CUSTOMIZATION['font_color']),
+        'slide_duration': session.get('slide_duration', DEFAULT_CUSTOMIZATION['slide_duration']),
     }
 
     return render_template('slideshow.html',
                            files=files,
                            customization=customization)
+
 

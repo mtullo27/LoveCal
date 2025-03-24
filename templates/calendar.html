@@ -1,107 +1,108 @@
 {% extends "layout.html" %}
 {% block title %}My Calendar{% endblock %}
 {% block content %}
-  <!-- Include FullCalendar's CSS & JS from a CDN -->
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
-  
-  <style>
-    /* Overlay styles for event details */
-    #eventDetailsOverlay {
-      position: fixed;
-      top: 0;
-      right: -100%;
-      width: 100%;
-      max-width: 400px;
-      height: 100%;
-      background: #fff;
-      box-shadow: -2px 0 5px rgba(0,0,0,0.3);
-      overflow-y: auto;
-      transition: right 0.3s ease;
-      z-index: 1000;
-      padding: 20px;
-    }
-    #eventDetailsOverlay.show {
-      right: 0;
-    }
-    #eventDetailsOverlay .close-btn {
-      display: inline-block;
-      margin-bottom: 10px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-  </style>
+<!-- Include FullCalendar's CSS & JS from a CDN -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
 
-  <div class="header">My Personal Calendar</div>
-  <!-- FullCalendar container -->
-  <div id="calendar"></div>
-  
-  <!-- Event details overlay -->
-  <div id="eventDetailsOverlay">
-    <div class="close-btn" onclick="closeEventDetails()">X Close</div>
-    <div id="eventDetailsContent"></div>
-  </div>
+<style>
+  /* Overlay styles for event details */
+  #eventDetailsOverlay {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 100%;
+    max-width: 400px;
+    height: 100%;
+    background: #fff;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+    overflow-y: auto;
+    transition: right 0.3s ease;
+    z-index: 1000;
+    padding: 20px;
+  }
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      var calendarEl = document.getElementById('calendar');
-      
-      // Pass your events from Flask to JavaScript using the tojson filter.
-      var events = {{ events | tojson }};
-      
-      // Transform your event data into FullCalendar's format.
-      var formattedEvents = events.map(function(event) {
-        return {
-          title: event.summary,
-          start: event.start.dateTime || event.start.date,
-          // Optionally include more details.
-          extendedProps: {
-            description: event.description || "",
-            location: event.location || ""
-          }
-        };
-      });
-      
-      var calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        events: formattedEvents,
-        headerToolbar: {
-          left: 'prev,next today',
-          center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay'
-        },
-        eventDisplay: 'block',
-        eventClick: function(info) {
-          // Prevent default navigation
-          info.jsEvent.preventDefault();
-          var eventObj = info.event;
-          
-          // Build content for the details overlay.
-          var content = '<h2>' + eventObj.title + '</h2>';
-          content += '<p><strong>Start:</strong> ' + eventObj.start.toLocaleString() + '</p>';
-          if (eventObj.end) {
-            content += '<p><strong>End:</strong> ' + eventObj.end.toLocaleString() + '</p>';
-          }
-          if (eventObj.extendedProps.description) {
-            content += '<p>' + eventObj.extendedProps.description + '</p>';
-          }
-          if (eventObj.extendedProps.location) {
-            content += '<p><strong>Location:</strong> ' + eventObj.extendedProps.location + '</p>';
-          }
-          
-          document.getElementById('eventDetailsContent').innerHTML = content;
-          // Animate the overlay in
-          document.getElementById('eventDetailsOverlay').classList.add('show');
-        }
-      });
-      
-      calendar.render();
-    });
-    
-    function closeEventDetails() {
-      document.getElementById('eventDetailsOverlay').classList.remove('show');
+  #eventDetailsOverlay.show {
+    right: 0;
+  }
+
+  #eventDetailsOverlay .close-btn {
+    display: inline-block;
+    margin-bottom: 10px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+</style>
+
+<!-- FullCalendar container -->
+<div id="calendar"></div>
+
+<!-- Event details overlay -->
+<div id="eventDetailsOverlay">
+  <div class="close-btn" onclick="closeEventDetails()">X Close</div>
+  <div id="eventDetailsContent"></div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var calendarEl = document.getElementById('calendar');
+
+    // Pass your events from Flask to JavaScript using the tojson filter.
+    var events = {{ events | tojson
+  }};
+
+  // Transform your event data into FullCalendar's format.
+  var formattedEvents = events.map(function (event) {
+    return {
+      title: event.summary,
+      start: event.start.dateTime || event.start.date,
+      color: event.color,
+      extendedProps: {
+        description: event.description || "",
+        location: event.location || ""
+      }
+    };
+  });
+
+  var calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    events: formattedEvents,
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek,timeGridDay'
+    },
+    eventDisplay: 'block',
+    eventClick: function (info) {
+      // Prevent default navigation
+      info.jsEvent.preventDefault();
+      var eventObj = info.event;
+
+      // Build content for the details overlay.
+      var content = '<h2>' + eventObj.title + '</h2>';
+      content += '<p><strong>Start:</strong> ' + eventObj.start.toLocaleString() + '</p>';
+      if (eventObj.end) {
+        content += '<p><strong>End:</strong> ' + eventObj.end.toLocaleString() + '</p>';
+      }
+      if (eventObj.extendedProps.description) {
+        content += '<p>' + eventObj.extendedProps.description + '</p>';
+      }
+      if (eventObj.extendedProps.location) {
+        content += '<p><strong>Location:</strong> ' + eventObj.extendedProps.location + '</p>';
+      }
+
+      document.getElementById('eventDetailsContent').innerHTML = content;
+      // Animate the overlay in
+      document.getElementById('eventDetailsOverlay').classList.add('show');
     }
-  </script>
+  });
 
-  <a href="{{ url_for('photo_bp.index') }}">Back to Gallery</a>
+  calendar.render();
+});
+
+  function closeEventDetails() {
+    document.getElementById('eventDetailsOverlay').classList.remove('show');
+  }
+</script>
+
 {% endblock %}

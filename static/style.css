@@ -18,6 +18,24 @@ body {
     color: var(--font-color);
 }
 
+.upload-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background-color: var(--button-color);
+    color: #fff;
+    border-radius: 0.5rem;
+    transition: background-color 0.3s ease;
+}
+
+.upload-button:hover {
+    filter: brightness(80%);
+    opacity: .5;
+}
+
+
 .upload-container,
 .search-container,
 .sort-container,
@@ -32,11 +50,11 @@ body {
     color: var(--font-color);
 }
 
+
 button,
-.edit-btn,
-.delete-btn {
-    background-color: var(--button-color);
-    color: #fff;
+.delete-calendar,
+.add-calendar {
+    color: var(--button-color);
     /* or var(--font-color) if you want */
     border: none;
     border-radius: 0;
@@ -44,28 +62,41 @@ button,
     /* etc. */
 }
 
-button:hover {
-    opacity: 5.0;
-}
+.edit-btn,
+.delete-btn {
+    color: var(--button-color);
+    position: absolute;
+    top: 5px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 28px;
 
-/* Container color example */
-.gallery {
-    background-color: var(--container-color);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    /* etc. */
-}
+    button:hover {
+        opacity: 5.0;
+    }
 
-/* Keep all your other classes, referencing these variables as needed. */
-.gallery.small .gallery-item {
-    width: calc(10% - 10px);
-}
+    /* Container color example */
+    .gallery {
+        background-color: var(--container-color);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        /* etc. */
+    }
 
-.gallery.medium .gallery-item {
-    width: calc(25% - 10px);
-}
+    /* Keep all your other classes, referencing these variables as needed. */
+    .gallery.small .gallery-item {
+        width: calc(10% - 10px);
+    }
 
-.gallery.large .gallery-item {
-    width: calc(50% - 10px);
-}
+    .gallery.medium .gallery-item {
+        width: calc(25% - 10px);
+    }
+
+    .gallery.large .gallery-item {
+        width: calc(50% - 10px);
+    }

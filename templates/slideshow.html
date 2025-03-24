@@ -24,7 +24,9 @@
     }
     if (slides.length > 0) {
         showSlide(currentIndex);
-        setInterval(nextSlide, 5000);
+        // Use slide_duration from customization (converted to ms)
+        setInterval(nextSlide, {{ customization.slide_duration | safe }} * 1000);
+        
     }
 </script>
 {% endblock %}
