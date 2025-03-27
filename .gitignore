@@ -37,6 +37,7 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 client_secret.json
+/slideshow_images
 
 # Unit test / coverage reports
 htmlcov/
