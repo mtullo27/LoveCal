@@ -4,6 +4,27 @@
 <div class="container">
   <h1 class="text-2xl font-bold mb-6">Customize Interface</h1>
   <form id="customForm" method="post" class="space-y-6">
+    <!-- Additional settings -->
+    <div>
+      <label class="block mb-2 text-sm font-medium text-gray-900">Preview Size</label>
+      <select name="preview_size" onchange="this.form.submit()"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">
+        <option value="small" {% if preview_size=='small' %}selected{% endif %}>Small</option>
+        <option value="medium" {% if preview_size=='medium' %}selected{% endif %}>Medium</option>
+        <option value="large" {% if preview_size=='large' %}selected{% endif %}>Large</option>
+      </select>
+    </div>
+    <div>
+      <label class="block mb-2 text-sm font-medium text-gray-900">Slideshow Timeout (seconds)</label>
+      <input type="number" name="slideshow_timeout" value="{{ slideshow_timeout }}" min="0"
+        onchange="this.form.submit()"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">
+    </div>
+    <div>
+      <label class="block mb-2 text-sm font-medium text-gray-900">Slide Duration (seconds)</label>
+      <input type="number" id="slideDuration" name="slide_duration" value="{{ slide_duration }}" min="1"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">
+    </div>
     <!-- Calendar Entries -->
     <div>
       <label class="block mb-2 text-sm font-medium text-gray-900">Calendar Entries</label>
@@ -15,7 +36,7 @@
           <input type="color" name="calendar_colors" value="{{ entry.color }}"
             class="calendar-input w-10 h-10 p-0 border-0">
           <button type="button" class="delete-calendar" onclick="deleteCalendar(this)"
-            {% if calendar_entries|length == 1 %} style="display:none;" {% endif %}>
+            {% if calendar_entries|length==1 %}style="display:none;"{% endif %}>
             <i class="bi bi-dash-circle" style="color: {{ button_color }};"></i>
           </button>
           <button type="button" class="add-calendar" onclick="addCalendar(this)">
@@ -25,87 +46,136 @@
         {% endfor %}
       </div>
     </div>
-    <!-- A different button that also triggers auto-submit -->
-    <div>
-      <button type="button" id="otherAction" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-        Other Action
-      </button>
-    </div>
-    <!-- Optional manual submission button -->
+    <!-- Optional manual submission and a different button trigger -->
     <div>
       <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
         Save Changes
+      </button>
+      <button type="button" class="trigger-auto-submit bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+        Another Action
       </button>
     </div>
   </form>
 </div>
 
 <script>
-  // Submits the form.
+  // Function to submit the form.
   function autoSubmit() {
     document.getElementById('customForm').submit();
   }
 
-  // Setup auto-submit behavior for a single input element.
+  // Global variable for button color.
+  const buttonColor = "{{ button_color }}";
+
+  // Setup auto-submit behavior for an input.
   function setupAutoSubmitForInput(input) {
-    let idleTimer;
-    // When the user types, reset a 10-second timer.
+    let timer;
     input.addEventListener('input', function() {
-      clearTimeout(idleTimer);
-      idleTimer = setTimeout(autoSubmit, 10000); // 10 seconds idle
+      clearTimeout(timer);
+      // For calendar URL inputs in a new row, check if they're still empty.
+      if (input.name === "calendar_urls") {
+        const row = input.closest('.calendar-entry');
+        if (row && row.getAttribute('data-new') === 'true') {
+          if (input.value.trim() === "") {
+            // If the new row is still empty, do not start the auto-submit timer.
+            return;
+          } else {
+            // Once the user enters something, remove the "data-new" flag.
+            row.removeAttribute('data-new');
+          }
+        }
+      }
+      timer = setTimeout(autoSubmit, 10000); // 10-second idle
     });
-    // When the user leaves the input, immediately submit.
     input.addEventListener('blur', function() {
-      clearTimeout(idleTimer);
+      clearTimeout(timer);
+      // For new calendar URL inputs, do not auto-submit on blur if still empty.
+      if (input.name === "calendar_urls") {
+        const row = input.closest('.calendar-entry');
+        if (row && row.getAttribute('data-new') === 'true' && input.value.trim() === "") {
+          return;
+        }
+      }
       autoSubmit();
     });
   }
 
-  // Attach auto-submit events to all calendar inputs.
-  function setupAutoSubmitForCalendarEntries() {
-    const calendarInputs = document.querySelectorAll('.calendar-input');
-    calendarInputs.forEach(input => {
+  // Attach auto-submit handlers to inputs within a container.
+  function setupAutoSubmit(container) {
+    const inputs = container.querySelectorAll('input[name="calendar_urls"], input[name="calendar_colors"]');
+    inputs.forEach(function(input) {
       setupAutoSubmitForInput(input);
     });
   }
 
-  // Adds a new calendar entry row and sets up auto-submit for its inputs.
+  // Adds a new calendar row, marks it as "new", and sets up auto-submit.
   function addCalendar(button) {
     const container = document.getElementById('calendarsContainer');
     const newDiv = document.createElement('div');
     newDiv.className = 'calendar-entry flex items-center space-x-2 mb-2';
+    newDiv.setAttribute('data-new', 'true');  // Mark this row as new
     newDiv.innerHTML = `
       <input type="text" name="calendar_urls" placeholder="Calendar URL"
-        class="calendar-input bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block flex-grow p-2.5">
+             class="calendar-input bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block flex-grow p-2.5">
       <input type="color" name="calendar_colors" value="#007aff"
-        class="calendar-input w-10 h-10 p-0 border-0">
+             class="calendar-input w-10 h-10 p-0 border-0">
       <button type="button" class="delete-calendar" onclick="deleteCalendar(this)">
-        <i class="bi bi-dash-circle" style="color: {{ button_color }};"></i>
+        <i class="bi bi-dash-circle" style="color: ${buttonColor};"></i>
       </button>
       <button type="button" class="add-calendar" onclick="addCalendar(this)">
-        <i class="bi bi-plus-circle" style="color: {{ button_color }};"></i>
+        <i class="bi bi-plus-circle" style="color: ${buttonColor};"></i>
       </button>
     `;
-    container.appendChild(newDiv);
-    // Setup auto-submit for the new inputs.
-    setupAutoSubmitForCalendarEntries();
+    container.insertBefore(newDiv, button.parentNode.nextSibling);
+    setupAutoSubmit(newDiv);  // Set up auto-submit for the new inputs
+    updateDeleteButtons();
   }
 
-  // Deletes a calendar entry row and auto-submits the form.
+  // Deletes a calendar row and submits the form.
   function deleteCalendar(button) {
-    const entryRow = button.closest('.calendar-entry');
-    entryRow.remove();
-    autoSubmit();
+    const row = button.parentNode;
+    row.parentNode.removeChild(row);
+    updateDeleteButtons();
+    autoSubmit(); // Auto-submit after deletion
   }
 
-  // When the page is loaded, attach auto-submit to calendar inputs
-  // and also attach a click event to the "Other Action" button.
-  document.addEventListener('DOMContentLoaded', function() {
-    setupAutoSubmitForCalendarEntries();
+  // Update the delete button visibility.
+  function updateDeleteButtons() {
+    const rows = document.querySelectorAll('#calendarsContainer .calendar-entry');
+    if (rows.length === 1) {
+      rows[0].querySelector('.delete-calendar').style.display = 'none';
+    } else {
+      rows.forEach(function(row) {
+        row.querySelector('.delete-calendar').style.display = 'inline-block';
+      });
+    }
+  }
 
-    document.getElementById('otherAction').addEventListener('click', function() {
-      autoSubmit();
+  // Setup auto-submit on page load for existing calendar rows.
+  document.addEventListener('DOMContentLoaded', function () {
+    const calendarEntries = document.querySelectorAll('.calendar-entry');
+    calendarEntries.forEach(function(entry) {
+      setupAutoSubmit(entry);
+    });
+    
+    // Trigger auto-submit if any button with class "trigger-auto-submit" is clicked.
+    const autoSubmitButtons = document.querySelectorAll('button.trigger-auto-submit');
+    autoSubmitButtons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        autoSubmit();
+      });
+    });
+    
+    // Debounce slide duration input to avoid immediate submission while typing.
+    let slideDurationTimeout;
+    const slideDurationInput = document.getElementById("slideDuration");
+    slideDurationInput.addEventListener("input", function () {
+      clearTimeout(slideDurationTimeout);
+      slideDurationTimeout = setTimeout(function() {
+        document.getElementById("customForm").submit();
+      }, 500);
     });
   });
 </script>
 {% endblock %}
+
