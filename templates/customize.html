@@ -4,27 +4,6 @@
 <div class="container">
   <h1 class="text-2xl font-bold mb-6">Customize Interface</h1>
   <form id="customForm" method="post" class="space-y-6">
-    <!-- Color settings -->
-    <!-- <div>
-      <label class="block mb-2 text-sm font-medium text-gray-900">Background Color</label>
-      <input type="color" name="background_color" value="{{ background_color }}" onchange="autoSubmit()"
-        class="w-16 h-10 p-0 border-0">
-    </div>
-    <div>
-      <label class="block mb-2 text-sm font-medium text-gray-900">Button Color</label>
-      <input type="color" name="button_color" value="{{ button_color }}" onchange="autoSubmit()"
-        class="w-16 h-10 p-0 border-0">
-    </div>
-    <div>
-      <label class="block mb-2 text-sm font-medium text-gray-900">Container Color</label>
-      <input type="color" name="container_color" value="{{ container_color }}" onchange="autoSubmit()"
-        class="w-16 h-10 p-0 border-0">
-    </div>
-    <div>
-      <label class="block mb-2 text-sm font-medium text-gray-900">Font Color</label>
-      <input type="color" name="font_color" value="{{ font_color }}" onchange="autoSubmit()"
-        class="w-16 h-10 p-0 border-0">
-    </div> -->
     <!-- Additional settings -->
     <div>
       <label class="block mb-2 text-sm font-medium text-gray-900">Preview Size</label>
@@ -54,9 +33,9 @@
         <div class="calendar-entry flex items-center space-x-2 mb-2">
           <input type="text" name="calendar_urls" value="{{ entry.url }}" placeholder="Calendar URL"
             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block flex-grow p-2.5">
-          <input type="color" name="calendar_colors" value="{{ entry.color }}" class="w-10 h-10 p-0 border-0">
-          <button type="button" class="delete-calendar" onclick="deleteCalendar(this)" {% if calendar_entries|length==1
-            %}style="display:none;" {% endif %}>
+          <input type="color" name="calendar_colors" value="{{ entry.color }}"
+            class="w-10 h-10 p-0 border-0">
+          <button type="button" class="delete-calendar" onclick="deleteCalendar(this)" {% if calendar_entries|length==1 %}style="display:none;" {% endif %}>
             <i class="bi bi-dash-circle" style="color: {{ button_color }};"></i>
           </button>
           <button type="button" class="add-calendar" onclick="addCalendar(this)">
@@ -66,34 +45,56 @@
         {% endfor %}
       </div>
     </div>
+    <!-- Optional manual submission and a different button trigger -->
+    <div>
+      <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        Save Changes
+      </button>
+      <button type="button" class="trigger-auto-submit bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+        Another Action
+      </button>
+    </div>
   </form>
 </div>
 
 <script>
+  // Basic autoSubmit function that simply submits the form.
   function autoSubmit() {
     document.getElementById('customForm').submit();
   }
+
   // Global variable for button color from customization.
   const buttonColor = "{{ button_color }}";
 
+  // Add a new calendar entry and set up auto-submit events for its inputs.
   function addCalendar(button) {
     const container = document.getElementById('calendarsContainer');
     const newDiv = document.createElement('div');
     newDiv.className = 'calendar-entry flex items-center space-x-2 mb-2';
     newDiv.innerHTML = `
-      <input type="text" name="calendar_urls" placeholder="Calendar URL" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block flex-grow p-2.5">
-      <input type="color" name="calendar_colors" value="#007aff" class="w-10 h-10 p-0 border-0">
-      <button type="button" class="delete-calendar" onclick="deleteCalendar(this)"><i class="bi bi-dash-circle" style="color: ${buttonColor};"></i></button>
-      <button type="button" class="add-calendar" onclick="addCalendar(this)"><i class="bi bi-plus-circle" style="color: ${buttonColor};"></i></button>
+      <input type="text" name="calendar_urls" placeholder="Calendar URL"
+             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block flex-grow p-2.5">
+      <input type="color" name="calendar_colors" value="#007aff"
+             class="w-10 h-10 p-0 border-0">
+      <button type="button" class="delete-calendar" onclick="deleteCalendar(this)">
+        <i class="bi bi-dash-circle" style="color: ${buttonColor};"></i>
+      </button>
+      <button type="button" class="add-calendar" onclick="addCalendar(this)">
+        <i class="bi bi-plus-circle" style="color: ${buttonColor};"></i>
+      </button>
     `;
     container.insertBefore(newDiv, button.parentNode.nextSibling);
+    setupAutoSubmit(newDiv); // Setup auto-submit on the new inputs
     updateDeleteButtons();
   }
+  
   function deleteCalendar(button) {
     const row = button.parentNode;
     row.parentNode.removeChild(row);
     updateDeleteButtons();
+    autoSubmit(); // Auto-submit after deletion
   }
+  
   function updateDeleteButtons() {
     const rows = document.querySelectorAll('#calendarsContainer .calendar-entry');
     if (rows.length === 1) {
@@ -104,18 +105,53 @@
       });
     }
   }
-  document.addEventListener('DOMContentLoaded', function () {
-    updateDeleteButtons();
-  });
 
-  // Debounce slide duration update to avoid immediate form submission
-  let slideDurationTimeout;
-  const slideDurationInput = document.getElementById("slideDuration");
-  slideDurationInput.addEventListener("input", function () {
-    clearTimeout(slideDurationTimeout);
-    slideDurationTimeout = setTimeout(() => {
-      document.getElementById("customForm").submit();
-    }, 500); // 500ms debounce
+  // Setup auto-submit events (blur & idle timeout) for both text and color inputs.
+  function setupAutoSubmit(container) {
+    const inputs = container.querySelectorAll('input[name="calendar_urls"], input[name="calendar_colors"]');
+    inputs.forEach(function(input) {
+      setupAutoSubmitForInput(input);
+    });
+  }
+  
+  function setupAutoSubmitForInput(input) {
+    let timer;
+    // Reset and start a 10-second timer on any input event.
+    input.addEventListener('input', function() {
+      clearTimeout(timer);
+      timer = setTimeout(autoSubmit, 10000); // 10 seconds idle
+    });
+    // Immediately submit when the input loses focus.
+    input.addEventListener('blur', function() {
+      clearTimeout(timer);
+      autoSubmit();
+    });
+  }
+  
+  // Setup auto-submit for all existing calendar entries on page load.
+  document.addEventListener('DOMContentLoaded', function () {
+    const calendarEntries = document.querySelectorAll('.calendar-entry');
+    calendarEntries.forEach(function(entry) {
+      setupAutoSubmit(entry);
+    });
+    
+    // Also, if a button with class "trigger-auto-submit" is pressed, auto-submit the form.
+    const autoSubmitButtons = document.querySelectorAll('button.trigger-auto-submit');
+    autoSubmitButtons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        autoSubmit();
+      });
+    });
+    
+    // Debounce slide duration update (as before) to avoid immediate submission while typing.
+    let slideDurationTimeout;
+    const slideDurationInput = document.getElementById("slideDuration");
+    slideDurationInput.addEventListener("input", function () {
+      clearTimeout(slideDurationTimeout);
+      slideDurationTimeout = setTimeout(() => {
+        document.getElementById("customForm").submit();
+      }, 500); // 500ms debounce
+    });
   });
 </script>
 {% endblock %}
