@@ -111,7 +111,6 @@ def authorize():
         include_granted_scopes='true',
         prompt='consent'
     )
-    
     session['state'] = state
     return redirect(authorization_url)
 
@@ -122,11 +121,17 @@ def oauth2callback():
         os.path.join(os.path.dirname(os.path.abspath(__file__)), '../client_secret.json'),
         scopes=['https://www.googleapis.com/auth/calendar.readonly'],
         state=state,
-        redirect_uri=url_for('calendar_bp.oauth2callback', _external=True,  _scheme='https'))
+        redirect_uri=url_for('calendar_bp.oauth2callback', _external=True, _scheme='https'))
     
     flow.fetch_token(authorization_response=request.url)
-    
     creds = flow.credentials
+
+    # Check if the refresh_token is missing
+    if not creds.refresh_token:
+        # Option 1: Force re-authentication by clearing existing credentials
+        session.pop('credentials', None)
+        # Optionally flash a message here to notify the user.
+        return redirect(url_for('calendar_bp.authorize'))
+
     session['credentials'] = creds_to_dict(creds)
-    
     return redirect(url_for('calendar_bp.show_calendar'))

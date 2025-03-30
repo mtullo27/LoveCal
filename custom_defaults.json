@@ -1,0 +1,15 @@
+{
+    "background_color": "#f9f9f9",
+    "button_color": "#007aff",
+    "container_color": "#ffffff",
+    "font_color": "#333333",
+    "preview_size": "medium",
+    "slideshow_timeout": 300,
+    "slide_duration": 5,
+    "calendar_entries": [
+        {
+            "url": "https://calendar.google.com",
+            "color": "#007aff"
+        }
+    ]
+}
